@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Service</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f9f9f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, button { width: 100%; margin-top: 10px; padding: 10px; box-sizing: border-box; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .status { margin-top: 15px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Thanh toán (Payment Service)</h2>
+        <form id="paymentForm">
+            <input type="text" id="bookingId" placeholder="Mã Booking (VD: BK123)" required>
+            <input type="number" id="amount" placeholder="Số tiền (VND)..." required>
+            <button type="submit">Thanh toán ngay</button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Đang xử lý giao dịch...";
+            statusDiv.style.color = "blue";
+
+            const data = {
+                bookingId: document.getElementById('bookingId').value,
+                amount: parseInt(document.getElementById('amount').value)
+            };
+
+            try {
+                const res = await fetch('/api/payment/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                
+                if(result.success) {
+                    statusDiv.innerText = `Thành công! Mã giao dịch: ${result.data.transactionId}`;
+                    statusDiv.style.color = "green";
+                } else {
+                    statusDiv.innerText = result.error;
+                    statusDiv.style.color = "red";
+                }
+            } catch (err) {
+                statusDiv.innerText = "Lỗi kết nối Server";
+                statusDiv.style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>
