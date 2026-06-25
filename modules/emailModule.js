@@ -1,36 +1,40 @@
 const nodemailer = require('nodemailer');
 
-// Thiết lập kết nối đến External Email Service (VD: Gmail SMTP)
+// 1. Cấu hình External Email Service (Ví dụ dùng Gmail)
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false,
+    secure: false, // Dùng port 587 thì secure là false
     auth: {
-        user: 'your_email@gmail.com', // Thay bằng email của bạn
-        pass: 'your_app_password'     // Thay bằng App Password
+        // LƯU Ý: Thay bằng email và App Password của bạn để test thực tế
+        user: 'your_email@gmail.com', 
+        pass: 'your_app_password_here' 
     }
 });
 
-// Hàm thực hiện gửi email
-const sendNotificationEmail = async (toEmail, messageContent) => {
+// 2. Hàm xử lý nghiệp vụ tạo và gửi email
+const sendNotification = async (email, message) => {
+    // Đóng gói nội dung theo format HTML
     const mailOptions = {
         from: '"Hệ thống Thuê Xe" <your_email@gmail.com>',
-        to: toEmail,
-        subject: 'Thông báo từ hệ thống',
+        to: email,
+        subject: 'Thông báo từ Hệ thống Thuê Xe',
         html: `
-            <div style="padding: 20px; border: 1px solid #ddd; font-family: Arial;">
-                <h2 style="color: #007bff;">Thông báo hệ thống</h2>
-                <p>${messageContent}</p>
-                <hr>
-                <p style="font-size: 12px; color: #888;">Email tự động từ module Email Service.</p>
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px; max-width: 500px;">
+                <h2 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px;">Thông báo hệ thống</h2>
+                <p>Xin chào,</p>
+                <p style="font-size: 15px; color: #333;">${message}</p>
+                <br/>
+                <hr style="border-top: 1px dashed #ccc;">
+                <p style="font-size: 12px; color: #888;">Đây là email tự động từ Email Service. Vui lòng không trả lời.</p>
             </div>
         `
     };
 
-    // Thực thi việc gửi ra bên ngoài (External System)
+    // Gọi bất đồng bộ (Async) ra External System
     return await transporter.sendMail(mailOptions);
 };
 
-module.exports = {
-    sendNotificationEmail
+module.exports = { 
+    sendNotification 
 };

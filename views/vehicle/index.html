@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Service</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f9f9f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { width: 100%; margin-top: 10px; padding: 10px; background: #17a2b8; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .vehicle-list { margin-top: 20px; list-style: none; padding: 0; }
+        .vehicle-item { padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Tìm kiếm xe (Vehicle Service)</h2>
+        <button id="loadVehiclesBtn">Tải danh sách xe có sẵn</button>
+        <ul id="vehicleList" class="vehicle-list"></ul>
+    </div>
+
+    <script>
+        document.getElementById('loadVehiclesBtn').addEventListener('click', async () => {
+            const list = document.getElementById('vehicleList');
+            list.innerHTML = "<li>Đang tải dữ liệu...</li>";
+
+            try {
+                const res = await fetch('/api/vehicle/available');
+                const result = await res.json();
+
+                list.innerHTML = '';
+                if(result.success && result.data.length > 0) {
+                    result.data.forEach(car => {
+                        list.innerHTML += `
+                            <li class="vehicle-item">
+                                <strong>${car.name}</strong> 
+                                <span style="color: green;">${car.price.toLocaleString()} VND/ngày</span>
+                            </li>
+                        `;
+                    });
+                } else {
+                    list.innerHTML = "<li>Không tìm thấy xe nào.</li>";
+                }
+            } catch (err) {
+                list.innerHTML = "<li style='color: red;'>Lỗi khi tải dữ liệu xe</li>";
+            }
+        });
+    </script>
+</body>
+</html>

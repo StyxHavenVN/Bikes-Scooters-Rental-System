@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Service</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f9f9f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, textarea, button { width: 100%; margin-top: 10px; padding: 10px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .status { margin-top: 15px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Gửi thông báo (Email Service)</h2>
+        <form id="emailForm">
+            <input type="email" id="email" placeholder="Email người nhận..." required>
+            <textarea id="message" rows="4" placeholder="Nội dung..." required></textarea>
+            <button type="submit">Gửi Email</button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Đang gửi...";
+            statusDiv.style.color = "blue";
+
+            const data = {
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const res = await fetch('/api/email/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                
+                if(result.success) {
+                    statusDiv.innerText = result.message;
+                    statusDiv.style.color = "green";
+                } else {
+                    statusDiv.innerText = result.error;
+                    statusDiv.style.color = "red";
+                }
+            } catch (err) {
+                statusDiv.innerText = "Lỗi kết nối Server";
+                statusDiv.style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>
