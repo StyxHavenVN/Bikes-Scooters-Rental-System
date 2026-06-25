@@ -1,74 +1,282 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Thuê Xe - C&C Architecture</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bikes & Scooters Rental System Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { display: flex; height: 100vh; background-color: #f4f6f9; color: #333; }
-        
-        /* Sidebar Định Hướng */
-        .sidebar { width: 260px; background-color: #1e2229; color: #fff; display: flex; flex-direction: column; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
-        .sidebar-header { padding: 20px; background-color: #1a1d24; text-align: center; border-bottom: 1px solid #2d323e; }
-        .sidebar-header h3 { color: #00bfff; font-size: 18px; }
-        .sidebar-menu { list-style: none; padding: 15px 0; flex-grow: 1; }
-        .sidebar-menu li { padding: 12px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; font-size: 15px; border-left: 4px solid transparent; }
-        .sidebar-menu li:hover, .sidebar-menu li.active { background-color: #2c313c; border-left-color: #00bfff; color: #00bfff; }
-        
-        /* Khu vực hiển thị nội dung chính */
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; }
-        .top-bar { height: 60px; background-color: #fff; display: flex; align-items: center; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .top-bar h2 { font-size: 20px; font-weight: 600; color: #444; }
-        
-        /* Iframe chứa các giao diện con */
-        .content-body { flex-grow: 1; padding: 20px; display: flex; }
-        .view-frame { width: 100%; height: 100%; border: none; background: transparent; border-radius: 8px; }
-        
-        /* Phần thông tin hệ thống phía dưới Sidebar */
-        .sidebar-footer { padding: 15px; background-color: #1a1d24; font-size: 12px; color: #7a8292; text-align: center; }
+      .map-bg {
+        background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+        background-size: 16px 16px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
+    
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl">🚲</span>
+          <span class="text-xl font-bold text-gray-900 tracking-tight">2Wheels Rental</span>
+        </div>
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h3>HỆ THỐNG THUÊ XE</h3>
+        <div class="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200">
+          <button onclick="switchRole('Customer')" id="btn-role-customer" class="px-3 py-1.5 text-xs font-medium rounded-md bg-white text-indigo-600 shadow-sm transition-all">Customer View</button>
+          <button onclick="switchRole('Vendor')" id="btn-role-vendor" class="px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 hover:text-gray-900 transition-all">Vendor View</button>
+          <button onclick="switchRole('Admin')" id="btn-role-admin" class="px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 hover:text-gray-900 transition-all">Admin View</button>
         </div>
-        <ul class="sidebar-menu">
-            <li class="active" onclick="switchView('/vehicle', 'Quản Lý Xe (Vehicle Management Service)')">🚗 Tìm Kiếm & Quản Lý Xe</li>
-            <li onclick="switchView('/payment', 'Thanh Toán Giao Dịch (Payment Service)')">💳 Xử Lý Thanh Toán</li>
-            <li onclick="switchView('/email', 'Trung Tâm Thông Báo (Email Service)')">✉️ Gửi Email Thông Báo</li>
-        </ul>
-        <div class="sidebar-footer">
-            <p>Kiến trúc 3 Lớp (MVC Pattern)</p>
-        </div>
-    </div>
 
-    <div class="main-content">
-        <div class="top-bar">
-            <h2 id="view-title">Quản Lý Xe (Vehicle Management Service)</h2>
+        <div class="flex items-center space-x-4">
+          <div class="relative p-2 text-gray-400 hover:text-gray-500 cursor-pointer">
+            <span>🔔</span>
+            <span id="noti-badge" class="hidden absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+          </div>
+          <div class="flex items-center space-x-2 border-l pl-4 border-gray-200">
+            <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">H</div>
+            <span class="text-sm font-medium text-gray-700">Nhật Hào</span>
+          </div>
         </div>
-        <div class="content-body">
-            <iframe id="main-frame" class="view-frame" src="/vehicle"></iframe>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+      <div id="customer-container" class="space-y-6">
+        
+        <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Loại xe</label>
+            <select class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+              <option>Tất cả xe máy & xe đạp</option>
+              <option>Xe máy điện (Scooter)</option>
+              <option>Xe đạp địa hình (Bicycle)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Bắt đầu thuê (>1 tháng)</label>
+            <input type="date" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-sm" value="2026-07-01"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Ngày trả xe</label>
+            <input type="date" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-sm" value="2026-08-01"/>
+          </div>
+          <div class="flex items-end">
+            <button onclick="loadVehiclesFromAPI()" id="btn-search-vehicle" class="w-full bg-indigo-600 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition">
+              🔍 Tìm xe trống (<3s)
+            </button>
+          </div>
         </div>
-    </div>
+
+        <div id="vehicle-list-section" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <p class="text-gray-500 text-sm">Vui lòng bấm "Tìm xe trống" để gọi API lấy dữ liệu từ Vehicle Service...</p>
+        </div>
+
+        <div id="payment-section" class="hidden max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-amber-50 border-b border-amber-200 p-4 flex items-center space-x-3 text-amber-800">
+            <span class="animate-pulse">💳</span>
+            <p class="text-sm font-medium">Đơn hàng đang chờ xử lý thanh toán đồng bộ (REST Synchronous)</p>
+          </div>
+          <div class="p-6 space-y-6">
+            <h3 class="text-xl font-bold text-gray-900">Hóa đơn thanh toán thuê xe</h3>
+            <div class="bg-gray-50 p-4 rounded-xl space-y-2 text-sm border border-gray-100">
+              <div class="flex justify-between"><span>Tên phương tiện:</span><span id="summary-name" class="font-semibold">-</span></div>
+              <div class="flex justify-between"><span>Thời hạn thuê:</span><span class="font-semibold">1 Tháng (01/07 - 01/08)</span></div>
+              <hr />
+              <div class="flex justify-between text-base font-bold text-gray-900">
+                <span>Tổng cộng:</span><span id="summary-price" class="text-indigo-600">-</span>
+              </div>
+            </div>
+
+            <div class="border border-dashed border-gray-300 p-5 rounded-xl bg-gray-50 text-center space-y-4">
+              <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Mock Payment Gateway Client Simulation</p>
+              <div class="flex justify-center space-x-4">
+                <button id="btn-pay-success" onclick="executePaymentFlow()" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition">
+                  Giao dịch thanh toán (200 OK)
+                </button>
+                <button onclick="cancelPayment()" class="bg-rose-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-rose-700 transition">
+                  Hủy giao dịch
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tracking-section" class="hidden space-y-4">
+          <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-800 text-sm font-medium">
+            ✓ Đơn hàng đã được thanh toán. Trạng thái xe cập nhật thành công: <span class="underline font-bold">Rented</span>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-900 flex items-center space-x-2">
+                  <span>📍</span><span>Vị trí xe thời gian thực (GPS Tracking Service)</span>
+                </h3>
+                <span class="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded animate-pulse">● Đang kết nối (MQTT/Async)</span>
+              </div>
+              <div class="h-80 bg-slate-100 rounded-lg border border-gray-200 flex flex-col items-center justify-center text-gray-400 relative overflow-hidden map-bg">
+                <div class="text-center space-y-2">
+                  <div class="inline-block p-3 bg-indigo-600 text-white rounded-full shadow-lg text-xl animate-bounce">🛵</div>
+                  <p class="text-sm font-semibold text-gray-700">Tọa độ xe hiện tại: 16.0544° N, 108.2022° E</p>
+                  <p class="text-xs text-gray-400">Đà Nẵng, Việt Nam - Đang truyền tín hiệu liên tục</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-xs space-y-4">
+              <h4 class="font-bold text-gray-900">Lịch sử lộ trình di chuyển</h4>
+              <div class="space-y-3 text-sm">
+                <div class="border-l-2 border-indigo-500 pl-4 relative py-1">
+                  <div class="absolute -left-[5px] top-2 w-2 h-2 rounded-full bg-indigo-600"></div>
+                  <p class="font-medium text-gray-800">Cơ sở Quang Trung - Đại học Duy Tân</p>
+                  <span class="text-xs text-gray-400">Vừa xong</span>
+                </div>
+                <div class="border-l-2 border-indigo-200 pl-4 relative py-1">
+                  <div class="absolute -left-[5px] top-2 w-2 h-2 rounded-full bg-indigo-300"></div>
+                  <p class="font-medium text-gray-600">Cầu Rồng Đà Nẵng</p>
+                  <span class="text-xs text-gray-400">30 phút trước</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="vendor-container" class="hidden bg-white border border-gray-200 rounded-xl p-6 shadow-xs space-y-4">
+        <h3 class="text-lg font-bold text-gray-900">Bảng điều khiển của Đối tác (Vendor Portal)</h3>
+        <button class="bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 transition">+ Thêm xe mới vào hệ thống</button>
+      </div>
+
+      <div id="admin-container" class="hidden bg-white border border-gray-200 rounded-xl p-6 shadow-xs space-y-4">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2 text-rose-600"><span>🛡️</span><span>Hệ thống quản trị tối cao (Admin Management)</span></h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div class="bg-gray-50 p-4 rounded-lg border">Tổng khách hàng:<strong class="block text-2xl text-gray-900">5.000</strong></div>
+          <div class="bg-gray-50 p-4 rounded-lg border">Tổng nhà xe:<strong class="block text-2xl text-gray-900">200</strong></div>
+          <div class="bg-gray-50 p-4 rounded-lg border">Max truy cập:<strong class="block text-2xl text-indigo-600">300/s</strong></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 py-6 mt-12 border-t border-gray-800 text-xs text-center space-y-1">
+      <p class="font-semibold text-gray-300 uppercase tracking-wider">Mô phỏng kiến trúc Microservices</p>
+      <p>Đồ án thực hành Kỹ thuật phần mềm</p>
+    </footer>
 
     <script>
-        function switchView(url, title) {
-            // Thay đổi đường dẫn trong iframe để nạp giao diện con tương ứng
-            document.getElementById('main-frame').src = url;
-            
-            // Cập nhật lại tiêu đề trên thanh Top Bar
-            document.getElementById('view-title').innerText = title;
-            
-            // Cập nhật trạng thái Active (màu sắc) trên thanh Menu Sidebar
-            const menuItems = document.querySelectorAll('.sidebar-menu li');
-            menuItems.forEach(item => item.classList.remove('active'));
-            
-            // Tìm mục được click để thêm class active
-            event.currentTarget.classList.add('active');
+      let currentSelectedVehicle = "";
+      let currentSelectedPriceNum = 0;
+
+      // Xử lý chuyển đổi Tab (Giữ nguyên logic của bạn)
+      function switchRole(role) {
+        document.getElementById("customer-container").classList.add("hidden");
+        document.getElementById("vendor-container").classList.add("hidden");
+        document.getElementById("admin-container").classList.add("hidden");
+        document.querySelectorAll('[id^="btn-role-"]').forEach((btn) => btn.className = "px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 hover:text-gray-900 transition-all");
+        
+        document.getElementById(`${role.toLowerCase()}-container`).classList.remove("hidden");
+        document.getElementById(`btn-role-${role.toLowerCase()}`).className = "px-3 py-1.5 text-xs font-medium rounded-md bg-white text-indigo-600 shadow-sm transition-all";
+      }
+
+      // LUỒNG 1: GỌI API LẤY DANH SÁCH XE (Vehicle Service)
+      async function loadVehiclesFromAPI() {
+        const btnSearch = document.getElementById("btn-search-vehicle");
+        const listSection = document.getElementById("vehicle-list-section");
+        
+        btnSearch.innerText = "Đang tải dữ liệu...";
+        
+        try {
+          // Gọi sang API Gateway -> Vehicle Controller
+          const response = await fetch('/api/vehicle/available');
+          const result = await response.json();
+
+          if (result.success) {
+            listSection.innerHTML = ''; // Xóa thông báo cũ
+            // Render động UI dựa trên dữ liệu thật từ Backend
+            result.data.forEach(car => {
+              const formattedPrice = car.price.toLocaleString('vi-VN') + 'đ/tháng';
+              listSection.innerHTML += `
+                <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden hover:border-indigo-300 transition">
+                  <div class="h-40 bg-indigo-50 flex items-center justify-center text-5xl">${car.name.includes('Bicycle') ? '🚲' : '🛵'}</div>
+                  <div class="p-5 space-y-4">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded font-semibold">${car.id}</span>
+                        <h3 class="font-bold text-gray-900 text-lg mt-1">${car.name}</h3>
+                      </div>
+                      <span class="text-indigo-600 font-bold">${formattedPrice}</span>
+                    </div>
+                    <button onclick="selectVehicle('${car.name}', '${formattedPrice}', ${car.price})" class="w-full bg-gray-900 text-white text-sm font-medium py-2 rounded-lg hover:bg-gray-800 transition">
+                      Đặt thuê xe này
+                    </button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        } catch (error) {
+          listSection.innerHTML = `<p class="text-red-500">Lỗi kết nối đến Vehicle Service!</p>`;
+        } finally {
+          btnSearch.innerText = "🔍 Tìm xe trống (<3s)";
         }
+      }
+
+      function selectVehicle(name, priceStr, priceNum) {
+        currentSelectedVehicle = name;
+        currentSelectedPriceNum = priceNum;
+        
+        document.getElementById("summary-name").innerText = name;
+        document.getElementById("summary-price").innerText = priceStr;
+
+        document.getElementById("vehicle-list-section").classList.add("hidden");
+        document.getElementById("payment-section").classList.remove("hidden");
+      }
+
+      // LUỒNG 2 & 3: THANH TOÁN GIAO DỊCH VÀ GỬI EMAIL (Payment & Email Service)
+      async function executePaymentFlow() {
+        const btnPay = document.getElementById("btn-pay-success");
+        btnPay.innerText = "Đang xử lý thanh toán...";
+        btnPay.disabled = true;
+
+        try {
+          // 1. Gọi API Thanh toán
+          const payRes = await fetch('/api/payment/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId: 'BK' + Date.now(), amount: currentSelectedPriceNum })
+          });
+          const payResult = await payRes.json();
+
+          if (payResult.success) {
+            // Chuyển UI sang trạng thái Tracking
+            document.getElementById("payment-section").classList.add("hidden");
+            document.getElementById("tracking-section").classList.remove("hidden");
+            document.getElementById("noti-badge").classList.remove("hidden");
+
+            // 2. Gọi API Gửi Email thông báo bất đồng bộ
+            const userEmail = prompt("Giao dịch thành công! Nhập email để nhận hóa đơn:", "khachhang@example.com");
+            
+            if (userEmail) {
+                await fetch('/api/email/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: userEmail, 
+                        message: `Xác nhận thanh toán thành công cho phương tiện: ${currentSelectedVehicle}. Mã giao dịch: ${payResult.data.transactionId}` 
+                    })
+                });
+                alert(`[Notification Service] Đã gửi email hóa đơn đến ${userEmail}!`);
+            }
+          }
+        } catch (error) {
+          alert("Lỗi kết nối đến Payment/Email Service backend!");
+        } finally {
+          btnPay.innerText = "Giao dịch thanh toán (200 OK)";
+          btnPay.disabled = false;
+        }
+      }
+
+      function cancelPayment() {
+        document.getElementById("payment-section").classList.add("hidden");
+        document.getElementById("vehicle-list-section").classList.remove("hidden");
+      }
     </script>
-</body>
+  </body>
 </html>
